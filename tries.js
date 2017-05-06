@@ -1,3 +1,5 @@
+
+
 class Node {
     constructor(value) {
         this.value = value;
@@ -32,14 +34,21 @@ class ContactTries {
                 return count;
             }
         }
-
         return currentNode.num_visits;
-
     }
 }
 
+const fs = require('fs');
+const text = fs.readFileSync("./input12.txt").toString('utf-8');
+const textByLine = text.split("\n");
+
 let t = new ContactTries();
-t.addWord("bo");
-t.addWord("bozh");
-t.addWord("bozhi");
-console.log(t.findWord("b"));
+
+for(let i = 1; i < textByLine.length; i++) {
+  let line = textByLine[i].split(" ");
+  if (line[0][0] === "a") {
+    t.addWord(line[1]);
+  } else {
+    console.log(t.findWord(line[1]));
+  }
+}
