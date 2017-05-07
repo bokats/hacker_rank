@@ -1,3 +1,5 @@
+require 'byebug'
+
 class Node
   attr_reader :value
 
@@ -7,6 +9,9 @@ class Node
 end
 
 class MinHeap
+
+  attr_reader :store
+
   def initialize
     @store = []
   end
@@ -25,21 +30,23 @@ class MinHeap
   end
 
   def peek
-    @store[0].value
+    @store[0]
   end
 
   def heapify_up
     current_idx = @store.length - 1
     parent_idx = parent(current_idx)
 
-    while !parent_idx.nil? &&
-      @store[current_idx].value < @store[parent_idx].value
+    while !parent_idx.nil?
 
-      @store[current_idx], @store[parent_idx] =
-        @store[parent_idx], @store[current_idx]
-
-      current_idx = parent_idx
-      parent_idx = parent(current_idx)
+      if @store[current_idx].value < @store[parent_idx].value
+        @store[current_idx], @store[parent_idx] =
+          @store[parent_idx], @store[current_idx]
+        current_idx = parent_idx
+        parent_idx = parent(current_idx)
+      else
+        break
+      end
     end
   end
 
@@ -48,19 +55,18 @@ class MinHeap
     swap = true
     while swap
       children_idx = children(current_idx)
-      highest_idx = current_idx
+      lowest_index = current_idx
       swap = false
       children_idx.each do |child_idx|
-        if @store[child_idx].value < @store[highest_idx].value
-          highest_idx = child_idx
+        if @store[child_idx].value < @store[lowest_index].value
+          lowest_index = child_idx
           swap = true
         end
       end
 
       if swap
-        @store[current_idx], @store[highest_idx] =
-          @store[highest_idx], @store[current_idx]
-        current_idx = highest_idx
+        @store[current_idx], @store[lowest_index] = @store[lowest_index], @store[current_idx]
+        current_idx = lowest_index
       end
     end
   end
@@ -72,8 +78,8 @@ class MinHeap
 
   def children(index)
     result = []
-    first_child = (index / 2) + 1
-    second_child = (index / 2) + 2
+    first_child = (index * 2) + 1
+    second_child = (index * 2) + 2
     result << first_child if first_child < @store.length
     result << second_child if second_child < @store.length
     result
@@ -81,6 +87,9 @@ class MinHeap
 end
 
 class MaxHeap
+
+  attr_reader :store
+
   def initialize
     @store = []
   end
@@ -88,10 +97,6 @@ class MaxHeap
   def insert(node)
     @store << node
     heapify_up
-  end
-
-  def peek
-    @store[0].value
   end
 
   def extract
@@ -102,18 +107,24 @@ class MaxHeap
     min_node
   end
 
+  def peek
+    @store[0]
+  end
+
   def heapify_up
     current_idx = @store.length - 1
     parent_idx = parent(current_idx)
 
-    while !parent_idx.nil? &&
-      @store[current_idx].value > @store[parent_idx].value
+    while !parent_idx.nil?
 
-      @store[current_idx], @store[parent_idx] =
-        @store[parent_idx], @store[current_idx]
-
-      current_idx = parent_idx
-      parent_idx = parent(current_idx)
+      if @store[current_idx].value > @store[parent_idx].value
+        @store[current_idx], @store[parent_idx] =
+          @store[parent_idx], @store[current_idx]
+        current_idx = parent_idx
+        parent_idx = parent(current_idx)
+      else
+        break
+      end
     end
   end
 
@@ -122,19 +133,18 @@ class MaxHeap
     swap = true
     while swap
       children_idx = children(current_idx)
-      highest_idx = current_idx
+      highest_index = current_idx
       swap = false
       children_idx.each do |child_idx|
-        if @store[child_idx].value > @store[highest_idx].value
-          highest_idx = child_idx
+        if @store[child_idx].value > @store[highest_index].value
+          highest_index = child_idx
           swap = true
         end
       end
 
       if swap
-        @store[current_idx], @store[highest_idx] =
-          @store[highest_idx], @store[current_idx]
-        current_idx = highest_idx
+        @store[current_idx], @store[highest_index] = @store[highest_index], @store[current_idx]
+        current_idx = highest_index
       end
     end
   end
@@ -146,8 +156,8 @@ class MaxHeap
 
   def children(index)
     result = []
-    first_child = (index / 2) + 1
-    second_child = (index / 2) + 2
+    first_child = (index * 2) + 1
+    second_child = (index * 2) + 2
     result << first_child if first_child < @store.length
     result << second_child if second_child < @store.length
     result
@@ -155,7 +165,7 @@ class MaxHeap
 end
 
 class TrackMedian
-  attr_reader :min_heap, :max_heap
+  attr_reader :min_heap, :max_heap, :median
 
   def initialize
     @min_heap = MinHeap.new
@@ -163,16 +173,14 @@ class TrackMedian
     @min_heap_length = 0
     @max_heap_length = 0
     @median = nil
-    @even = true
   end
 
   def insert(number)
     new_node = Node.new(number)
-    @even = !@even
-    if @max_heap_length == 0 && @max_heap_length == 0
+    if @max_heap_length == 0
       @max_heap.insert(new_node)
       @max_heap_length += 1
-      @median = number
+      @median = number.to_f
     elsif number < @median
       @max_heap.insert(new_node)
       @max_heap_length += 1
@@ -181,18 +189,51 @@ class TrackMedian
       @min_heap_length += 1
     end
     calculate_median
-
   end
 
   def calculate_median
+
     size_difference = @min_heap_length - @max_heap_length
     if size_difference > 1
       @max_heap.insert(@min_heap.extract)
+      @median = (@max_heap.peek.value.to_f + @min_heap.peek.value) / 2
+      @min_heap_length -= 1
+      @max_heap_length += 1
+    elsif size_difference < -1
+      @min_heap.insert(@max_heap.extract)
+      @median = (@max_heap.peek.value.to_f + @min_heap.peek.value) / 2
+      @max_heap_length -= 1
+      @min_heap_length += 1
+    elsif size_difference == 1
+      @median = @min_heap.peek.value.to_f
+    elsif size_difference == -1
+      @median = @max_heap.peek.value.to_f
+    else
+      @median = (@max_heap.peek.value.to_f + @min_heap.peek.value) / 2
     end
-
+    @median
   end
-
 end
+
+# Tests
+
+# t = TrackMedian.new
+# 0.upto(10) do |num|
+#   t.insert(num)
+#   p num
+#   p t.median
+# end
+
+# min = MinHeap.new
+# 0.upto(10) do |num|
+#   min.insert(Node.new(num))
+# end
+
+max = MaxHeap.new
+0.upto(10) do |num|
+  max.insert(Node.new(num))
+end
+
 
 # n1 = Node.new(1)
 # n2 = Node.new(2)
