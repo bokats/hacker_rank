@@ -4,8 +4,12 @@ class TowersOfHanoi {
     this.lastMove = [];
   }
 
-  rearrange() {
-
+  solve() {
+    let stack = [[this.towers, this.possibleMoves(this.towers)]];
+    while (stack.length > 0) {
+      this.towers = stack[stack.length - 1][0];
+      let move = stack[stack.length - 1].pop();
+    }
   }
 
   allowedMove(fromTower, toTower) {
