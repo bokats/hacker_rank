@@ -4,8 +4,7 @@ def spiral_order(matrix)
   while true
 
     result += matrix.shift
-    p matrix
-    p result
+
     if matrix.empty?
       break
     else
