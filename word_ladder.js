@@ -23,6 +23,13 @@
 
 // ladderLength('hit', 'cog',["hot","dot","dog","lot","log","cog"]);
 
-for (let i = 0; i < 5; i++) {
-  
-}
+
+const addTwo = (x) => {
+  let firstNum = x;
+  const sumNumbers = (y) => {
+    return x + y;
+  };
+  return sumNumbers;
+};
+
+console.log(addTwo(1)(5));
