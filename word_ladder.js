@@ -32,4 +32,4 @@ const addTwo = (x) => {
   return sumNumbers;
 };
 
-console.log(addTwo(1)(7));
+console.log(addTwo(1)(8));
